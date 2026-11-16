@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Costume Party — Official Character Invitation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&family=Cinzel:wght@700;900&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --accent: #f59e0b;
+      --bg-dark: #0d0914;
+      --card-bg: rgba(24, 17, 36, 0.88);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: radial-gradient(circle at top, #1e1333 0%, var(--bg-dark) 75%);
+      color: #ffffff;
+      font-family: 'Outfit', 'Cairo', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .bg-glow {
+      position: fixed;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: var(--accent);
+      filter: blur(140px);
+      opacity: 0.32;
+      z-index: 0;
+      transition: background 0.5s ease;
+      pointer-events: none;
+    }
+
+    .floating-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+      opacity: 0.16;
+      font-size: 1.5rem;
+    }
+
+    .floating-bg span {
+      position: absolute;
+      animation: drift 12s linear infinite;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .card-container {
+      width: 100%;
+      max-width: 410px;
+      z-index: 2;
+    }
+
+    .invite-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid color-mix(in srgb, var(--accent) 45%, rgba(255, 255, 255, 0.12));
+      border-radius: 28px;
+      padding: 26px 22px;
+      text-align: center;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.75), 0 0 30px color-mix(in srgb, var(--accent) 25%, transparent);
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+      position: relative;
+    }
+
+    .invite-card.pop {
+      animation: cardPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .event-badge {
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .station-pill {
+      display: inline-block;
+      padding: 4px 16px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      color: #0d0914;
+      background: var(--accent);
+      margin-bottom: 16px;
+      transition: background 0.4s ease;
+    }
+
+    .character-stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 4px 0 14px;
+    }
+
+    .speech-bubble {
+      background: #ffffff;
+      color: #120d1d;
+      padding: 12px 16px;
+      border-radius: 18px;
+      position: relative;
+      margin-bottom: 16px;
+      max-width: 92%;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      animation: bubbleFloat 3s ease-in-out infinite;
+    }
+
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: #ffffff transparent transparent;
+    }
+
+    .join-text {
+      display: block;
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.8px;
+      color: #dc2626;
+      margin-bottom: 2px;
+    }
+
+    .speech-bubble p {
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .avatar-ring {
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      padding: 5px;
+      background: linear-gradient(135deg, var(--accent), rgba(255, 255, 255, 0.25));
+      box-shadow: 0 0 35px color-mix(in srgb, var(--accent) 55%, transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .character-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 35%, #2a1f3d 0%, #120d1d 85%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      animation: charBounce 2.8s ease-in-out infinite;
+    }
+
+    .character-avatar svg {
+      width: 88%;
+      height: 88%;
+    }
+
+    .character-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .character-title {
+      font-family: 'Cinzel', 'Outfit', 'Cairo', serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+      letter-spacing: 0.4px;
+    }
+
+    .station-desc {
+      font-size: 0.88rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 18px;
+      transition: color 0.4s ease;
+    }
+
+    .event-details {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 12px 14px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 0.86rem;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease, background 0.3s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0d0914;
+      box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 45%, transparent);
+    }
+
+    .btn-primary.confirmed {
+      background: #10b981;
+      color: #0d0914;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.84rem;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Registration Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 5, 14, 0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 380px;
+      background: #181124;
+      border: 1.5px solid var(--accent);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      transform: translateY(16px) scale(0.96);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.active .modal-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .modal-header h2 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .modal-station-tag {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .status-msg {
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 10px;
+      color: #fca5a5;
+      min-height: 18px;
+    }
+
+    @keyframes cardPop {
+      0% { transform: scale(0.9); opacity: 0.5; }
+      60% { transform: scale(1.02); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes charBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @keyframes bubbleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes drift {
+      0% { transform: translateY(105vh) rotate(0deg); }
+      100% { transform: translateY(-15vh) rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow" id="bgGlow"></div>
+  <div class="floating-bg" aria-hidden="true">
+    <span style="left: 10%; animation-delay: 0s;">🦇</span>
+    <span style="left: 28%; animation-delay: 3s;">🎃</span>
+    <span style="left: 52%; animation-delay: 1.5s;">✨</span>
+    <span style="left: 74%; animation-delay: 4.5s;">🎭</span>
+    <span style="left: 88%; animation-delay: 2s;">🕷️</span>
+  </div>
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="card-container">
+    <div class="invite-card" id="inviteCard">
+      <div class="event-badge">🎭 COLLEGE COSTUME PARTY</div>
+      <div class="station-pill" id="stationName">STATION 01</div>
+
+      <!-- Character & Speech Bubble -->
+      <div class="character-stage">
+        <div class="speech-bubble">
+          <span class="join-text">JOIN US!</span>
+          <p id="characterQuote">Howdy partner! Grab your boots & Join Us!</p>
+        </div>
+
+        <div class="avatar-ring">
+          <div class="character-avatar" id="characterAvatar"></div>
+        </div>
+      </div>
+
+      <!-- Character Info -->
+      <h1 class="character-title" id="characterTitle">The Outlaw Cowboy</h1>
+      <p class="station-desc" id="stationDesc">Wild West Saloon • Frontier Legends</p>
+
+      <!-- Event Details -->
+      <div class="event-details">
+        <div class="detail-item">
+          <span>📅</span>
+          <span id="eventDate">Thursday, Nov 26 • 6:00 PM</span>
+        </div>
+        <div class="detail-item">
+          <span>📍</span>
+          <span id="eventLocation">Main Campus Hall</span>
+        </div>
+        <div class="detail-item">
+          <span>🎭</span>
+          <span id="eventNote">Dress as your favorite Halloween or movie icon!</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions">
+        <button class="btn-primary" id="rsvpBtn">I'M IN! COUNT ME IN 🎉</button>
+        <button class="btn-secondary" id="rerollBtn">🔄 Preview Another Character</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- RSVP Name & ID Popup Modal -->
+  <div class="modal-overlay" id="rsvpModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>🎟️ Claim Your Spot</h2>
+        <p class="modal-station-tag" id="modalStationInfo">STATION 01 • The Outlaw Cowboy</p>
+      </div>
+
+      <form id="rsvpForm">
+        <div class="form-group">
+          <label for="guestName">Full Name</label>
+          <input type="text" id="guestName" dir="auto" placeholder="Enter your full name" required />
+        </div>
+
+        <div class="form-group">
+          <label for="guestId">College / Student ID</label>
+          <input type="text" id="guestId" placeholder="e.g. 20260158" required />
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary" id="submitBtn">CONFIRM MY SPOT 🎉</button>
+          <button type="button" class="btn-secondary" id="closeModalBtn">Cancel</button>
+        </div>
+        <p class="status-msg" id="statusMsg"></p>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STEP 1: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BETWEEN THE QUOTES BELOW
+    // =========================================================================
+    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwVzsb3XmYL4WCV-yhXIRBlgmnnwdRLjaxRBGu5NV70cmxG-HF2dionwshY8LtH0ool/exec";
+
+    // =========================================================================
+    // STEP 2: EDIT YOUR EVENT DETAILS
+    // =========================================================================
+    const EVENT_DETAILS = {
+      date: "Thursday, Nov 26 • 6:00 PM",
+      location: "Main Campus Hall",
+      note: "Dress as your favorite Halloween or movie icon!"
+    };
+
+    // =========================================================================
+    // STEP 3: CUSTOMIZE YOUR 6 STATIONS & CHARACTERS
+    // =========================================================================
+    const STATIONS = [
+      {
+        id: 1,
+        station: "STATION 01",
+        name: "The Outlaw Cowboy",
+        subtitle: "Wild West Saloon • Frontier Legends",
+        quote: "Howdy partner! Grab your boots & Join Us!",
+        color: "#f59e0b",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="44" rx="48" ry="14" fill="#5c3416"/>
+          <path d="M38 46 Q38 82 60 85 Q82 82 82 46 Z" fill="#f1c29b"/>
+          <path d="M45 55 L54 57" stroke="#3b200c" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M75 55 L66 57" stroke="#3b200c" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="50" cy="61" r="2.5" fill="#1e140c"/>
+          <circle cx="70" cy="61" r="2.5" fill="#1e140c"/>
+          <path d="M52 72 Q61 77 70 70" fill="none" stroke="#6e3b1e" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M35 83 L60 106 L85 83 Q60 90 35 83 Z" fill="#dc2626"/>
+          <circle cx="60" cy="89" r="4" fill="#991b1b"/>
+          <path d="M36 42 C36 20 50 18 60 24 C70 18 84 20 84 42 Z" fill="#854d22"/>
+          <path d="M36 39 Q60 44 84 39 L84 43 Q60 48 36 43 Z" fill="#d97706"/>
+          <path d="M14 42 Q60 55 106 42 Q96 52 60 52 Q24 52 14 42 Z" fill="#6d3e19"/>
+        </svg>`
+      },
+      {
+        id: 2,
+        station: "STATION 02",
+        name: "Count Dracula",
+        subtitle: "Transylvania Castle • Halloween Classic",
+        quote: "I vant to invite you to the party! Join Us!",
+        color: "#ef4444",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 65 L35 108 L85 108 L98 65 L75 78 L45 78 Z" fill="#991b1b" stroke="#111827" stroke-width="3"/>
+          <path d="M38 42 Q38 82 60 86 Q82 82 82 42 Z" fill="#e5e7eb"/>
+          <path d="M36 46 Q38 20 60 20 Q82 20 84 46 Q72 34 60 46 Q48 34 36 46 Z" fill="#111827"/>
+          <circle cx="49" cy="57" r="3" fill="#ef4444"/>
+          <circle cx="71" cy="57" r="3" fill="#ef4444"/>
+          <path d="M43 51 L54 55" stroke="#111827" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M77 51 L66 55" stroke="#111827" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M50 71 Q60 75 70 71" fill="none" stroke="#111827" stroke-width="2.2"/>
+          <polygon points="52,72 55,79 58,72" fill="#ffffff"/>
+          <polygon points="62,72 65,79 68,72" fill="#ffffff"/>
+          <polygon points="60,92 48,86 48,98" fill="#ef4444"/>
+          <polygon points="60,92 72,86 72,98" fill="#ef4444"/>
+        </svg>`
+      },
+      {
+        id: 3,
+        station: "STATION 03",
+        name: "Captain Blackbeard",
+        subtitle: "Cursed Galleon • Pirates of the Night",
+        quote: "Ahoy matey! Adventure & treasure await. Join Us!",
+        color: "#10b981",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 45 Q60 12 102 45 Q85 52 60 48 Q35 52 18 45 Z" fill="#1f2937"/>
+          <path d="M30 42 Q60 16 90 42" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+          <circle cx="60" cy="31" r="4.5" fill="#f9fafb"/>
+          <rect x="57.5" y="34" width="5" height="3" rx="1" fill="#f9fafb"/>
+          <path d="M36 46 Q60 50 84 46 L82 52 Q60 56 38 52 Z" fill="#dc2626"/>
+          <path d="M39 50 Q39 84 60 88 Q81 84 81 50 Z" fill="#eab68c"/>
+          <path d="M39 66 Q42 94 60 96 Q78 94 81 66 Q72 76 60 74 Q48 76 39 66 Z" fill="#27272a"/>
+          <circle cx="69" cy="60" r="2.5" fill="#18181b"/>
+          <line x1="40" y1="53" x2="80" y2="62" stroke="#111827" stroke-width="2"/>
+          <circle cx="50" cy="59" r="6" fill="#111827"/>
+          <circle cx="83" cy="68" r="4" fill="none" stroke="#fbbf24" stroke-width="2.2"/>
+        </svg>`
+      },
+      {
+        id: 4,
+        station: "STATION 04",
+        name: "The Dark Vigilante",
+        subtitle: "Gotham Rooftop • Movie Superhero",
+        quote: "The night needs a hero. Put on the mask & Join Us!",
+        color: "#eab308",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 104 Q32 82 60 82 Q88 82 98 104 Z" fill="#111827"/>
+          <polygon points="39,45 41,16 50,36" fill="#1f2937"/>
+          <polygon points="81,45 79,16 70,36" fill="#1f2937"/>
+          <path d="M38 42 Q38 82 60 85 Q82 82 82 42 Q60 32 38 42 Z" fill="#1f2937"/>
+          <path d="M43 63 L52 67 L68 67 L77 63 Q75 82 60 84 Q45 82 43 63 Z" fill="#f1c29b"/>
+          <polygon points="44,54 55,58 45,59" fill="#ffffff"/>
+          <polygon points="76,54 65,58 75,59" fill="#ffffff"/>
+          <line x1="53" y1="74" x2="67" y2="74" stroke="#7c4d2b" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="60" cy="96" rx="11" ry="6" fill="#eab308"/>
+        </svg>`
+      },
+      {
+        id: 5,
+        station: "STATION 05",
+        name: "The Pumpkin King",
+        subtitle: "Haunted Hollow • Halloween Icon",
+        quote: "It's spooky season! Light the lanterns & Join Us!",
+        color: "#f97316",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="70" rx="34" ry="27" fill="#ea580c"/>
+          <ellipse cx="60" cy="70" rx="22" ry="27" fill="#f97316"/>
+          <ellipse cx="60" cy="70" rx="10" ry="27" fill="#fb923c"/>
+          <polygon points="43,64 52,56 54,66" fill="#fef08a"/>
+          <polygon points="77,64 68,56 66,66" fill="#fef08a"/>
+          <polygon points="60,67 57,72 63,72" fill="#fef08a"/>
+          <path d="M42 77 L48 82 L54 78 L60 83 L66 78 L72 82 L78 77 Q60 91 42 77 Z" fill="#fef08a"/>
+          <ellipse cx="60" cy="46" rx="40" ry="9" fill="#312e81"/>
+          <path d="M38 46 L56 16 L76 24 L80 46 Z" fill="#3730a3"/>
+          <path d="M40 42 Q60 46 79 42 L80 46 Q60 50 39 46 Z" fill="#f59e0b"/>
+        </svg>`
+      },
+      {
+        id: 6,
+        station: "STATION 06",
+        name: "The Arcane Wizard",
+        subtitle: "Spellbound Academy • Movie Magic",
+        quote: "The magic portal is open! Grab your wand & Join Us!",
+        color: "#a855f7",
+        imageUrl: "",
+        svg: `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M26 105 Q38 82 60 82 Q82 82 94 105 Z" fill="#4c1d95"/>
+          <path d="M40 46 Q40 82 60 85 Q80 82 80 46 Z" fill="#f1c29b"/>
+          <circle cx="50" cy="60" r="7" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+          <circle cx="70" cy="60" r="7" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+          <line x1="57" y1="60" x2="63" y2="60" stroke="#1f2937" stroke-width="2.5"/>
+          <circle cx="50" cy="60" r="2" fill="#1f2937"/>
+          <circle cx="70" cy="60" r="2" fill="#1f2937"/>
+          <path d="M53 73 Q60 78 67 73" fill="none" stroke="#7c4d2b" stroke-width="2.3" stroke-linecap="round"/>
+          <ellipse cx="60" cy="46" rx="42" ry="10" fill="#581c87"/>
+          <path d="M36 46 L60 12 L84 46 Z" fill="#6b21a8"/>
+          <circle cx="56" cy="27" r="2" fill="#fde047"/>
+          <circle cx="66" cy="35" r="2.5" fill="#fde047"/>
+          <circle cx="49" cy="38" r="1.8" fill="#fde047"/>
+        </svg>`
+      }
+    ];
+
+    // =========================================================================
+    // APP LOGIC & GOOGLE SHEETS SUBMISSION
+    // =========================================================================
+    let currentIndex = 0;
+
+    document.getElementById("eventDate").textContent = EVENT_DETAILS.date;
+    document.getElementById("eventLocation").textContent = EVENT_DETAILS.location;
+    document.getElementById("eventNote").textContent = EVENT_DETAILS.note;
+
+    function renderStation(index) {
+      const data = STATIONS[index];
+      document.documentElement.style.setProperty("--accent", data.color);
+
+      document.getElementById("stationName").textContent = data.station;
+      document.getElementById("characterTitle").textContent = data.name;
+      document.getElementById("stationDesc").textContent = data.subtitle;
+      document.getElementById("characterQuote").textContent = data.quote;
+      document.getElementById("modalStationInfo").textContent = `${data.station} • ${data.name}`;
+
+      const avatarEl = document.getElementById("characterAvatar");
+      if (data.imageUrl) {
+        avatarEl.innerHTML = `<img src="${data.imageUrl}" alt="${data.name}">`;
+      } else {
+        avatarEl.innerHTML = data.svg;
+      }
+
+      const card = document.getElementById("inviteCard");
+      card.classList.remove("pop");
+      void card.offsetWidth;
+      card.classList.add("pop");
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedStation = parseInt(urlParams.get("station"), 10);
+
+    if (requestedStation >= 1 && requestedStation <= STATIONS.length) {
+      currentIndex = requestedStation - 1;
+    } else {
+      currentIndex = Math.floor(Math.random() * STATIONS.length);
+    }
+
+    renderStation(currentIndex);
+
+    document.getElementById("rerollBtn").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % STATIONS.length;
+      renderStation(currentIndex);
+      launchConfetti(35);
+    });
+
+    // Modal Controls
+    const rsvpBtn = document.getElementById("rsvpBtn");
+    const rsvpModal = document.getElementById("rsvpModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const rsvpForm = document.getElementById("rsvpForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusMsg = document.getElementById("statusMsg");
+
+    rsvpBtn.addEventListener("click", () => {
+      statusMsg.textContent = "";
+      rsvpModal.classList.add("active");
+      setTimeout(() => document.getElementById("guestName").focus(), 150);
+    });
+
+    closeModalBtn.addEventListener("click", () => {
+      rsvpModal.classList.remove("active");
+    });
+
+    rsvpModal.addEventListener("click", (e) => {
+      if (e.target === rsvpModal) rsvpModal.classList.remove("active");
+    });
+
+    // Submit Form to Google Sheets (using no-cors so Google's 302 redirect never fails on mobile browsers)
+    rsvpForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("guestName").value.trim();
+      const studentId = document.getElementById("guestId").value.trim();
+      const currentStation = STATIONS[currentIndex];
+
+      if (!name || !studentId) return;
+
+      const isConfigured = GOOGLE_SHEET_URL && GOOGLE_SHEET_URL.startsWith("https://script.google.com/");
+      if (!isConfigured) {
+        statusMsg.textContent = "Organizer setup incomplete: Add GOOGLE_SHEET_URL in the code first.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving your spot...";
+      statusMsg.textContent = "";
+
+      const payload = {
+        name: name,
+        studentId: studentId,
+        station: currentStation.station,
+        character: currentStation.name
+      };
+
+      try {
+        await fetch(GOOGLE_SHEET_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        rsvpModal.classList.remove("active");
+        rsvpBtn.textContent = `✅ REGISTERED: ${name}`;
+        rsvpBtn.classList.add("confirmed");
+        rsvpBtn.disabled = true;
+        launchConfetti(100);
+        rsvpForm.reset();
+      } catch (err) {
+        statusMsg.textContent = "Network error. Check your internet and try again!";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "CONFIRM MY SPOT 🎉";
+      }
+    });
+
+    // Confetti Animation
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function launchConfetti(count = 60) {
+      const colors = ["#f59e0b", "#ef4444", "#a855f7", "#10b981", "#f97316", "#fde047"];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 14,
+          size: Math.random() * 7 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1
+        });
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.alpha -= 0.015;
+        ctx.globalAlpha = Math.max(p.alpha, 0);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        if (p.alpha <= 0) particles.splice(i, 1);
+      });
+      requestAnimationFrame(animateConfetti);
+    }
+
+    animateConfetti();
+    setTimeout(() => launchConfetti(65), 250);
+  </script>
+</body>
+</html>
