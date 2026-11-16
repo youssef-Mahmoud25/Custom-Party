@@ -284,7 +284,6 @@
       background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Registration Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -494,12 +493,12 @@
 
   <script>
     // =========================================================================
-    // STEP 1: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BETWEEN THE QUOTES BELOW
+    // 1. PASTE YOUR NEWLY DEPLOYED /exec URL HERE
     // =========================================================================
-    cconst GOOGLE_SHEET_URL = "https://script.google.com/macros/s/YOUR_NEW_ID/exec";
+    const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxsnx5sn3LxbrUOlWmSGoso9331lKHPnpfm68jbaDG7fyKJOySo6tKCzLKD-M-L8taG/exec";
 
     // =========================================================================
-    // STEP 2: EDIT YOUR EVENT DETAILS
+    // 2. EDIT YOUR EVENT DETAILS
     // =========================================================================
     const EVENT_DETAILS = {
       date: "Thursday, Nov 26 • 6:00 PM",
@@ -508,7 +507,7 @@
     };
 
     // =========================================================================
-    // STEP 3: CUSTOMIZE YOUR 6 STATIONS & CHARACTERS
+    // 3. CUSTOMIZE YOUR 6 STATIONS & CHARACTERS
     // =========================================================================
     const STATIONS = [
       {
@@ -717,7 +716,7 @@
       if (e.target === rsvpModal) rsvpModal.classList.remove("active");
     });
 
-    // Submit Form to Google Sheets (using no-cors so Google's 302 redirect never fails on mobile browsers)
+    // Submit Form via Query Params (Reliable across CodePen, Mobile & Redirects)
     rsvpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -727,29 +726,21 @@
 
       if (!name || !studentId) return;
 
-      const isConfigured = GOOGLE_SHEET_URL && GOOGLE_SHEET_URL.startsWith("https://script.google.com/");
-      if (!isConfigured) {
-        statusMsg.textContent = "Organizer setup incomplete: Add GOOGLE_SHEET_URL in the code first.";
-        return;
-      }
-
       submitBtn.disabled = true;
       submitBtn.textContent = "Saving your spot...";
       statusMsg.textContent = "";
 
-      const payload = {
+      const query = new URLSearchParams({
         name: name,
         studentId: studentId,
         station: currentStation.station,
         character: currentStation.name
-      };
+      });
 
       try {
-        await fetch(GOOGLE_SHEET_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
+        await fetch(`${GOOGLE_SHEET_URL}?${query.toString()}`, {
+          method: "GET",
+          mode: "no-cors"
         });
 
         rsvpModal.classList.remove("active");
